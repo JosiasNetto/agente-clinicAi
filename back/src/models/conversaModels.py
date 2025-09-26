@@ -20,3 +20,7 @@ class Conversa(BaseModel):
     session_id: str
     mensagens: List[Mensagem] = []
     triagem: Optional[Triagem] = None
+
+class MessageRequest(BaseModel):
+    message: str
+    session_id: str = None

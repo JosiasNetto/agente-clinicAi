@@ -1,10 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from src.controllers.chatController import post_message
-
-class MessageRequest(BaseModel):
-    message: str
-    session_id: str = None
+from src.models.conversaModels import MessageRequest
 
 router = APIRouter()
 
