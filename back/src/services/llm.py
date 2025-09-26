@@ -1,27 +1,31 @@
 from src.models.promptModel import prompt
 from src.config.gemini import client
-from google import genai
 
 def generate_reply(conversation_history: list, user_message: str) -> str:
     context_text = ""
     for msg in conversation_history:
-        if msg["role"] == "user":
-            context_text += f"Paciente: {msg['content']}\n"
+        if msg.cargo == "user":
+            context_text += f"Paciente: {msg.body}\n"
+        elif msg.cargo == "ai":
+            context_text += f"Assistente: {msg.body}\n"
         else:
-            context_text += f"Assistente: {msg['content']}\n"
+            context_text = ""
     
     context_text += f"Paciente: {user_message}\nAssistente:"
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=[context_text], 
-        config=genai.types.GenerateContentConfig(
-            system_instruction=prompt,
-            temperature=0.7,
-            max_output_tokens=256  
-        )
+    model = client.GenerativeModel(
+        model_name="gemini-2.0-flash",
+        system_instruction=prompt
     )
-    
+
+    response = model.generate_content(
+        contents=context_text,
+        generation_config={
+            "temperature": 0.7,
+            "max_output_tokens": 256
+        }
+    )
+
     reply_text = response.text
     return reply_text.strip()
 
