@@ -4,7 +4,6 @@ from src.services.bd import (
     get_conversation_messages,
     update_conversation
 )
-
 from src.services.llm import handle_llm_message
 
 async def post_message(session_id: str = None, message: str = ""):
