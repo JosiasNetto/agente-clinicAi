@@ -1,14 +1,22 @@
 from src.config.db import db
 import uuid
+from src.models.conversaModels import (
+    Conversa,
+    Mensagem
+)
 
-async def create_conversation():
+def create_conversation():
     conversation_id = str(uuid.uuid4())
-    await db.conversations.insert_one({"session_id": conversation_id, "mensagens": [], "triagem": {}})
+    conversa = Conversa(session_id=conversation_id, mensagens=[], triagem={})
+    db.conversas.insert_one(conversa.dict())
     return conversation_id
 
-async def get_conversation(session_id: str):
-    conversation = await db.conversations.find_one({"session_id": session_id})
-    return conversation
+def get_conversation_messages(session_id: str):
+    conversation = db.conversas.find_one({"session_id": session_id})
+    if conversation:
+        return Conversa(**conversation).mensagens
+    return None
 
-async def update_conversation(session_id: str, mensagem: dict):
-    await db.conversations.update_one({"session_id": session_id}, {"$push": {"mensagens": mensagem}})
+def update_conversation(session_id: str, mensagem: dict):
+    mensagem = Mensagem(**mensagem)
+    db.conversas.update_one({"session_id": session_id}, {"$push": {"mensagens": mensagem.dict()}})
