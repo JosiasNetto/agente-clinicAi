@@ -16,11 +16,16 @@ class Triagem(BaseModel):
     historico: Optional[str] = None          
     medidas_tomadas: Optional[str] = None
 
+class MessageRequest(BaseModel):
+    message: str
+    session_id: str = None
+
 class Conversa(BaseModel):
+    numero_paciente: Optional[str] = None
     session_id: str
     mensagens: List[Mensagem] = []
     triagem: Optional[Triagem] = None
 
-class MessageRequest(BaseModel):
-    message: str
-    session_id: str = None
+
+class ConversationRequest(BaseModel):
+    numero_paciente: str
