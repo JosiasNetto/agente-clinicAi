@@ -6,10 +6,10 @@ from src.models.conversaModels import (
 )
 
 def create_conversation():
-    conversation_id = str(uuid.uuid4())
-    conversa = Conversa(session_id=conversation_id, mensagens=[], triagem={})
+    session_id = str(uuid.uuid4())
+    conversa = Conversa(session_id=session_id, mensagens=[], triagem={})
     db.conversas.insert_one(conversa.dict())
-    return conversation_id
+    return session_id
 
 def get_conversation_messages(session_id: str):
     conversation = db.conversas.find_one({"session_id": session_id})
