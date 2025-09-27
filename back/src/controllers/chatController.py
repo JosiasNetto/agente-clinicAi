@@ -2,14 +2,21 @@ import uuid
 from src.services.bd import (
     create_conversation,
     get_conversation_messages,
+    get_conversations_by_number,
     update_conversation
 )
 from src.services.llm import handle_llm_message
 from src.models.conversaModels import Mensagem
 
+async def get_conversations(numero_paciente: str):
+    conversations = get_conversations_by_number(numero_paciente)
+    if not conversations:
+        return []
+    return conversations
+
 async def post_conversation(numero_paciente: str):
     session_id = create_conversation(numero_paciente)
-    update_conversation(Mensagem(session_id, {"cargo": "system", "body": "Início da conversa"}))
+    update_conversation(session_id, {"cargo": "system", "body": "Início da conversa"})
     return {"session_id": session_id, "message": "Conversa iniciada com sucesso."}
 
 async def post_message(session_id: str = None, message: str = ""):
