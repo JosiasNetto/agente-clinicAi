@@ -1,5 +1,10 @@
-from src.models.promptModel import prompt
+from src.models.promptModel import ( 
+    prompt_reply,
+    prompt_triage
+)
 from src.config.gemini import client
+import json
+import re
 
 def generate_reply(conversation_history: list, user_message: str) -> str:
     context_text = ""
@@ -15,7 +20,7 @@ def generate_reply(conversation_history: list, user_message: str) -> str:
 
     model = client.GenerativeModel(
         model_name="gemini-2.0-flash",
-        system_instruction=prompt
+        system_instruction=prompt_reply
     )
 
     response = model.generate_content(
@@ -48,3 +53,50 @@ def handle_llm_message(conversation_history: list, user_message: str) -> str:
 
     reply = generate_reply(conversation_history, user_message)
     return reply
+
+def clean_json_response(response_text: str) -> str:
+
+    response_text = re.sub(r'```json\s*', '', response_text)
+    response_text = re.sub(r'```\s*$', '', response_text)
+    response_text = re.sub(r'^```\s*', '', response_text)
+    
+    json_start = response_text.find('{')
+    if json_start != -1:
+        response_text = response_text[json_start:]
+    
+    json_end = response_text.rfind('}')
+    if json_end != -1:
+        response_text = response_text[:json_end + 1]
+    
+    return response_text.strip()
+
+
+def generate_triage(conversation) -> dict:
+    history_text = ""
+    for msg in conversation:
+        if msg.cargo == "user":
+            history_text += f"Paciente: {msg.body}\n"
+        elif msg.cargo == "ai":
+            history_text += f"Assistente: {msg.body}\n"
+
+    prompt = prompt_triage + history_text + "\nJSON:"
+
+    model = client.GenerativeModel(
+        model_name="gemini-2.0-flash",
+        system_instruction=prompt
+    )
+
+    response = model.generate_content(
+        contents=prompt,
+        generation_config={
+            "temperature": 0.3,
+            "max_output_tokens": 256
+        }
+    )
+
+    try:
+        cleaned_json = clean_json_response(response.text)
+        triage_data = json.loads(cleaned_json)
+        return triage_data
+    except json.JSONDecodeError:
+        return {}
