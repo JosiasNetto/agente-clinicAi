@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Send, Bot, User, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useChatApi } from "@/hooks/use-chat-api";
+import { ChatMessage, convertApiMessagesToInternal } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -15,14 +16,24 @@ interface Message {
   isEmergency?: boolean;
 }
 
+interface ChatLocationState {
+  sessionId: string;
+  phoneNumber: string;
+  existingMessages: ChatMessage[];
+}
+
 const Chat = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { sessionId, isLoading, initializeChat, sendMessage: sendChatMessage } = useChatApi();
+  const { sessionId, isLoading, initializeChat, sendMessage: sendChatMessage, setSessionId } = useChatApi();
+
+  // Get state from navigation (if coming from modal selection)
+  const locationState = location.state as ChatLocationState | null;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,40 +44,64 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
-    // Initialize chat session when component mounts
-    const initialize = async () => {
-      try {
-        const welcomeMessage = await initializeChat();
-        
-        const message: Message = {
-          id: 'welcome',
-          content: welcomeMessage,
-          isUser: false,
-          timestamp: new Date(),
-        };
-
-        setMessages([message]);
-      } catch (error) {
-        console.error('Erro ao inicializar o chat:', error);
-        // Fallback to local welcome message if API fails
-        const fallbackMessage: Message = {
+    // Check if we have state from navigation (existing conversation or new chat)
+    if (locationState) {
+      const { sessionId: stateSessionId, existingMessages } = locationState;
+      
+      // Set the session ID from navigation state
+      setSessionId(stateSessionId);
+      
+      if (existingMessages && existingMessages.length > 0) {
+        // Convert ChatMessage[] to Message[] using utility function
+        const convertedMessages = convertApiMessagesToInternal(existingMessages);
+        setMessages(convertedMessages);
+      } else {
+        // New conversation - no existing messages, but we already have a session_id
+        // Add a welcome message since it's a new conversation
+        const welcomeMessage: Message = {
           id: 'welcome',
           content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?',
           isUser: false,
           timestamp: new Date(),
         };
-        setMessages([fallbackMessage]);
-        
-        toast({
-          title: 'Aviso',
-          description: 'Conectando ao servidor... Algumas funcionalidades podem estar limitadas.',
-          variant: 'default',
-        });
+        setMessages([welcomeMessage]);
       }
-    };
-    
-    initialize();
-  }, [initializeChat, toast]);
+    } else {
+      // Fallback: Initialize chat the old way (for direct navigation to /chat)
+      const initialize = async () => {
+        try {
+          const welcomeMessage = await initializeChat();
+          
+          const message: Message = {
+            id: 'welcome',
+            content: welcomeMessage,
+            isUser: false,
+            timestamp: new Date(),
+          };
+
+          setMessages([message]);
+        } catch (error) {
+          console.error('Erro ao inicializar o chat:', error);
+          // Fallback to local welcome message if API fails
+          const fallbackMessage: Message = {
+            id: 'welcome',
+            content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?',
+            isUser: false,
+            timestamp: new Date(),
+          };
+          setMessages([fallbackMessage]);
+          
+          toast({
+            title: 'Aviso',
+            description: 'Conectando ao servidor... Algumas funcionalidades podem estar limitadas.',
+            variant: 'default',
+          });
+        }
+      };
+      
+      initialize();
+    }
+  }, [locationState, initializeChat, setSessionId, toast]);
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;

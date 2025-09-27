@@ -4,6 +4,7 @@ import { API_ENDPOINTS, apiCall, ChatMessageRequest, ChatMessageResponse } from 
 export interface UseChatApiReturn {
   sessionId: string | null;
   isLoading: boolean;
+  setSessionId: (sessionId: string) => void;
   initializeChat: () => Promise<string>;
   sendMessage: (message: string, currentSessionId?: string | null) => Promise<{
     message: string;
@@ -75,6 +76,7 @@ export const useChatApi = (): UseChatApiReturn => {
   return {
     sessionId,
     isLoading,
+    setSessionId,
     initializeChat,
     sendMessage,
   };

@@ -1,13 +1,28 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { Heart, Shield, Stethoscope } from "lucide-react";
+import TriageModal from "@/components/TriageModal";
+import { ChatMessage } from "@/lib/api";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleStartTriage = () => {
-    navigate("/chat");
+    setIsModalOpen(true);
+  };
+
+  const handleStartChat = (sessionId: string, phoneNumber: string, existingMessages?: ChatMessage[]) => {
+    // Navigate to chat with session data
+    navigate('/chat', {
+      state: {
+        sessionId,
+        phoneNumber,
+        existingMessages: existingMessages || [],
+      }
+    });
   };
 
   return (
@@ -107,6 +122,12 @@ const Home = () => {
           </div>
         </div>
       </main>
+
+      <TriageModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onStartChat={handleStartChat}
+      />
     </div>
   );
 };
