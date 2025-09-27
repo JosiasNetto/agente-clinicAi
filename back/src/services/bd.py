@@ -5,9 +5,9 @@ from src.models.conversaModels import (
     Mensagem
 )
 
-def create_conversation():
+def create_conversation(numero_paciente: str = None):
     session_id = str(uuid.uuid4())
-    conversa = Conversa(session_id=session_id, mensagens=[], triagem={})
+    conversa = Conversa(session_id=session_id, mensagens=[], triagem={}, numero_paciente=numero_paciente)
     db.conversas.insert_one(conversa.dict())
     return session_id
 
@@ -16,6 +16,10 @@ def get_conversation_messages(session_id: str):
     if conversation:
         return Conversa(**conversation).mensagens
     return None
+
+def get_conversations_by_number(numero_paciente: str):
+    conversations = db.conversas.find({"numero_paciente": numero_paciente})
+    return [Conversa(**conv).dict() for conv in conversations]
 
 def update_conversation(session_id: str, mensagem: dict):
     mensagem = Mensagem(**mensagem)
