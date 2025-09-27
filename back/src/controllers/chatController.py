@@ -3,10 +3,19 @@ from src.services.bd import (
     create_conversation,
     get_conversation_messages_bd,
     get_conversations_by_number,
-    update_conversation
+    update_conversation,
+    update_triage
 )
-from src.services.llm import handle_llm_message
+from src.services.llm import generate_triage, handle_llm_message
 from src.models.conversaModels import Mensagem
+
+async def get_conversation_triage(session_id: str):
+    conversation = get_conversation_messages_bd(session_id)
+    if conversation is None:
+        raise ValueError("Conversa não encontrada")
+    triage = generate_triage(conversation)
+    update_triage(session_id, triage)
+    return triage
 
 async def get_conversations(numero_paciente: str):
     conversations = get_conversations_by_number(numero_paciente)
@@ -22,13 +31,13 @@ async def get_conversation_messages(session_id: str):
 
 async def post_conversation(numero_paciente: str):
     session_id = create_conversation(numero_paciente)
-    update_conversation(session_id, {"cargo": "system", "body": "Início da conversa"})
+    update_conversation(session_id, {"cargo": "ai", "body": "Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?"})
     return {"session_id": session_id, "message": "Conversa iniciada com sucesso."}
 
 async def post_message(session_id: str = None, message: str = ""):
     if not session_id:
         session_id = create_conversation()
-        conversation = [Mensagem(cargo="system", body="Início da conversa")]
+        conversation = [Mensagem(cargo="ai", body="Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?'")]
     else:
         conversation = get_conversation_messages_bd(session_id)
         if not conversation:
