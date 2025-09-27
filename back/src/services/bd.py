@@ -11,7 +11,7 @@ def create_conversation(numero_paciente: str = None):
     db.conversas.insert_one(conversa.dict())
     return session_id
 
-def get_conversation_messages(session_id: str):
+def get_conversation_messages_bd(session_id: str):
     conversation = db.conversas.find_one({"session_id": session_id})
     if conversation:
         return Conversa(**conversation).mensagens
