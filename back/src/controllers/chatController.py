@@ -7,6 +7,11 @@ from src.services.bd import (
 from src.services.llm import handle_llm_message
 from src.models.conversaModels import Mensagem
 
+async def post_conversation(numero_paciente: str):
+    session_id = create_conversation(numero_paciente)
+    update_conversation(Mensagem(session_id, {"cargo": "system", "body": "Início da conversa"}))
+    return {"session_id": session_id, "message": "Conversa iniciada com sucesso."}
+
 async def post_message(session_id: str = None, message: str = ""):
     if not session_id:
         session_id = create_conversation()
