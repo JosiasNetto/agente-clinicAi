@@ -1,7 +1,7 @@
 import uuid
 from src.services.bd import (
     create_conversation,
-    get_conversation_messages,
+    get_conversation_messages_bd,
     get_conversations_by_number,
     update_conversation
 )
@@ -14,6 +14,12 @@ async def get_conversations(numero_paciente: str):
         return []
     return conversations
 
+async def get_conversation_messages(session_id: str):
+    messages = get_conversation_messages_bd(session_id)
+    if messages is None:
+        raise ValueError("Conversa não encontrada")
+    return messages
+
 async def post_conversation(numero_paciente: str):
     session_id = create_conversation(numero_paciente)
     update_conversation(session_id, {"cargo": "system", "body": "Início da conversa"})
@@ -24,7 +30,7 @@ async def post_message(session_id: str = None, message: str = ""):
         session_id = create_conversation()
         conversation = [Mensagem(cargo="system", body="Início da conversa")]
     else:
-        conversation = get_conversation_messages(session_id)
+        conversation = get_conversation_messages_bd(session_id)
         if not conversation:
             raise ValueError("Conversa não encontrada")
 
