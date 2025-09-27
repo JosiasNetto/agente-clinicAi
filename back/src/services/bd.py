@@ -24,3 +24,6 @@ def get_conversations_by_number(numero_paciente: str):
 def update_conversation(session_id: str, mensagem: dict):
     mensagem = Mensagem(**mensagem)
     db.conversas.update_one({"session_id": session_id}, {"$push": {"mensagens": mensagem.dict()}})
+
+def update_triage(session_id: str, triage_data: dict):
+    db.conversas.update_one({"session_id": session_id}, {"$set": {"triagem": triage_data}})
