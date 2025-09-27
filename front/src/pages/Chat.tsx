@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Send, Bot, User, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useChatApi } from "@/hooks/use-chat-api";
 
 interface Message {
   id: string;
@@ -19,9 +20,9 @@ const Chat = () => {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { sessionId, isLoading, initializeChat, sendMessage: sendChatMessage } = useChatApi();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -32,15 +33,40 @@ const Chat = () => {
   }, [messages]);
 
   useEffect(() => {
-    // Add welcome message when chat starts
-    const welcomeMessage: Message = {
-      id: "welcome",
-      content: "Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?",
-      isUser: false,
-      timestamp: new Date(),
+    // Initialize chat session when component mounts
+    const initialize = async () => {
+      try {
+        const welcomeMessage = await initializeChat();
+        
+        const message: Message = {
+          id: 'welcome',
+          content: welcomeMessage,
+          isUser: false,
+          timestamp: new Date(),
+        };
+
+        setMessages([message]);
+      } catch (error) {
+        console.error('Erro ao inicializar o chat:', error);
+        // Fallback to local welcome message if API fails
+        const fallbackMessage: Message = {
+          id: 'welcome',
+          content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?',
+          isUser: false,
+          timestamp: new Date(),
+        };
+        setMessages([fallbackMessage]);
+        
+        toast({
+          title: 'Aviso',
+          description: 'Conectando ao servidor... Algumas funcionalidades podem estar limitadas.',
+          variant: 'default',
+        });
+      }
     };
-    setMessages([welcomeMessage]);
-  }, []);
+    
+    initialize();
+  }, [initializeChat, toast]);
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -52,35 +78,23 @@ const Chat = () => {
       timestamp: new Date(),
     };
 
+    const messageContent = inputValue;
     setMessages(prev => [...prev, userMessage]);
     setInputValue("");
-    setIsLoading(true);
 
     try {
-      // Simulate API call to FastAPI backend
-      // In real implementation, this would call /message endpoint
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simulate different types of responses
-      let botResponse = "";
-      let isEmergency = false;
-      
-      if (inputValue.toLowerCase().includes("dor no peito") || 
-          inputValue.toLowerCase().includes("falta de ar") ||
-          inputValue.toLowerCase().includes("emergência")) {
-        botResponse = "⚠️ ATENÇÃO: Pelos sintomas descritos, recomendo que procure atendimento médico de emergência IMEDIATAMENTE. Dirija-se ao pronto-socorro mais próximo ou chame o SAMU (192).";
-        isEmergency = true;
-      } else if (inputValue.toLowerCase().includes("dor de cabeça")) {
-        botResponse = "Entendo que você está com dor de cabeça. Para me ajudar a avaliar melhor sua situação, pode me dizer: há quanto tempo você está sentindo essa dor? A dor é constante ou vai e vem?";
-      } else if (inputValue.toLowerCase().includes("febre")) {
-        botResponse = "Você mencionou febre. Isso pode indicar uma infecção. Você mediu sua temperatura? Tem outros sintomas como dor de garganta, tosse ou mal-estar?";
-      } else {
-        botResponse = "Obrigado por compartilhar essa informação. Para fazer uma avaliação mais precisa, preciso entender melhor seus sintomas. Pode descrever o que está sentindo com mais detalhes?";
-      }
+      // Use the chat API hook to send the message
+      const response = await sendChatMessage(messageContent, sessionId);
+
+      // Determine if this is an emergency response
+      const isEmergency = response.message.includes('⚠️') || 
+                         response.message.toLowerCase().includes('emergência') ||
+                         response.message.toLowerCase().includes('imediatamente') ||
+                         response.message.toLowerCase().includes('samu');
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: botResponse,
+        content: response.message,
         isUser: false,
         timestamp: new Date(),
         isEmergency,
@@ -96,19 +110,13 @@ const Chat = () => {
         });
       }
 
-      // Simulate getting session_id from backend
-      if (!sessionId) {
-        setSessionId(`session_${Date.now()}`);
-      }
-
     } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
       toast({
         title: "Erro na conexão",
-        description: "Tente novamente em alguns instantes",
+        description: "Não foi possível enviar a mensagem. Tente novamente.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
