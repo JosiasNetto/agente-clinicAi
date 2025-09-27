@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
   GET_USER_CONVERSATIONS: (phoneNumber: string) => `${API_BASE_URL}/chat/${phoneNumber}`,
   CREATE_NEW_CHAT: `${API_BASE_URL}/chat/`,
   GET_CHAT_MESSAGES: (sessionId: string) => `${API_BASE_URL}/chat/messages/${sessionId}`,
+  GET_TRIAGE_SUMMARY: (sessionId: string) => `${API_BASE_URL}/chat/triage/${sessionId}`,
 } as const;
 
 // Request body types
@@ -38,6 +39,16 @@ export interface ChatMessage {
   cargo: 'system' | 'user' | 'ai';
   body: string;
   timestamp: string;
+}
+
+export interface TriageSummary {
+  main_complaint: string | null;
+  symptoms: string | null;
+  duration: string | null;
+  frequency: string | null;
+  intensity: string | null;
+  history: string | null;
+  measures_taken: string | null;
 }
 
 // API utility functions
@@ -74,4 +85,17 @@ export const convertApiMessagesToInternal = (apiMessages: ChatMessage[]) => {
                   msg.body.toLowerCase().includes('imediatamente') ||
                   msg.body.toLowerCase().includes('samu')
     }));
+};
+
+// Utility function to process triage summary, replacing null values
+export const processTriageSummary = (summary: TriageSummary): Record<string, string> => {
+  return {
+    main_complaint: summary.main_complaint || 'Não informado',
+    symptoms: summary.symptoms || 'Não informado',
+    duration: summary.duration || 'Não informado',
+    frequency: summary.frequency || 'Não informado',
+    intensity: summary.intensity || 'Não informado',
+    history: summary.history || 'Não informado',
+    measures_taken: summary.measures_taken || 'Não informado',
+  };
 };

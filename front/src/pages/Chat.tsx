@@ -6,7 +6,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Send, Bot, User, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useChatApi } from "@/hooks/use-chat-api";
-import { ChatMessage, convertApiMessagesToInternal } from "@/lib/api";
+import { 
+  ChatMessage, 
+  convertApiMessagesToInternal, 
+  API_ENDPOINTS, 
+  apiCall, 
+  TriageSummary, 
+  processTriageSummary 
+} from "@/lib/api";
 
 interface Message {
   id: string;
@@ -18,8 +25,8 @@ interface Message {
 
 interface ChatLocationState {
   sessionId: string;
-  phoneNumber: string;
-  existingMessages: ChatMessage[];
+  phoneNumber?: string;
+  existingMessages?: ChatMessage[];
 }
 
 const Chat = () => {
@@ -162,9 +169,40 @@ const Chat = () => {
     }
   };
 
-  const viewSummary = () => {
-    if (sessionId) {
-      navigate(`/summary/${sessionId}`);
+  const viewSummary = async () => {
+    if (!sessionId) {
+      toast({
+        title: "Erro",
+        description: "Sessão não encontrada. Inicie uma nova conversa.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Make request to get triage summary
+      const triageSummary = await apiCall<TriageSummary>(
+        API_ENDPOINTS.GET_TRIAGE_SUMMARY(sessionId),
+        { method: 'GET' }
+      );
+
+      // Process the summary to replace null values
+      const processedSummary = processTriageSummary(triageSummary);
+
+      // Navigate to summary page with the processed data
+      navigate(`/summary/${sessionId}`, {
+        state: {
+          summaryData: processedSummary,
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar resumo da triagem:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar o resumo da triagem. Tente novamente.",
+        variant: "destructive",
+      });
     }
   };
 
