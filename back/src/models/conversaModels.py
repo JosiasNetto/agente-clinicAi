@@ -25,7 +25,7 @@ class Conversa(BaseModel):
     session_id: str
     mensagens: List[Mensagem] = []
     triagem: Optional[Triagem] = None
-
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 class ConversationRequest(BaseModel):
     numero_paciente: str
