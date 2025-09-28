@@ -23,7 +23,8 @@ class Conversa(BaseModel):
 
 mensagem_inicial = '''Olá! Sou seu assistente de triagem médica. Vou fazer algumas 
 perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se 
-preparar para sua consulta?'''
+preparar para sua consulta? \n\n
+Lembre-se: esta é apenas uma triagem inicial e eu não substituo a avaliação de um profissional de saúde. Vamos começar?'''
 
 class MessageRequest(BaseModel):
     message: str
