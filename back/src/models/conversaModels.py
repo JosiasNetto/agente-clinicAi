@@ -29,3 +29,7 @@ class Conversa(BaseModel):
 
 class ConversationRequest(BaseModel):
     numero_paciente: str
+
+mensagem_inicial = '''Olá! Sou seu assistente de triagem médica. Vou fazer algumas 
+    perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se 
+    preparar para sua consulta?'''
