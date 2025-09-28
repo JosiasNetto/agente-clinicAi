@@ -7,14 +7,14 @@ import { useToast } from "@/hooks/use-toast";
 import { API_ENDPOINTS, apiCall, ChatMessage } from "@/lib/api";
 
 interface SummaryLocationState {
-  summaryData: Record<string, string>;
+  summaryData: Record<string, any>; // Changed from string to any to support arrays
 }
 
 interface TriageSummary {
   sessionId: string;
   timestamp: Date;
   mainComplaint: string;
-  symptoms: string;
+  symptoms: string[];  // Changed from string to string[]
   duration: string;
   frequency: string;
   intensity: string;
@@ -40,12 +40,14 @@ const Summary = () => {
             sessionId: sessionId || "",
             timestamp: new Date(),
             mainComplaint: locationState.summaryData.main_complaint,
-            symptoms: locationState.summaryData.symptoms,
-            duration: locationState.summaryData.duration,
-            frequency: locationState.summaryData.frequency,
-            intensity: locationState.summaryData.intensity,
-            history: locationState.summaryData.history,
-            measuresTaken: locationState.summaryData.measures_taken,
+            symptoms: Array.isArray(locationState.summaryData.symptoms) 
+              ? locationState.summaryData.symptoms 
+              : locationState.summaryData.symptoms ? [locationState.summaryData.symptoms] : [],
+            duration: locationState.summaryData.duration || "Não especificado",
+            frequency: locationState.summaryData.frequency || "Não especificado",
+            intensity: locationState.summaryData.intensity || "Não especificado",
+            history: locationState.summaryData.history || "Não especificado",
+            measuresTaken: locationState.summaryData.measures_taken || "Não especificado",
           };
           
           setSummary(summaryData);
@@ -207,7 +209,20 @@ const Summary = () => {
                 <Thermometer className="w-5 h-5 text-orange-600" />
                 <h3 className="font-semibold text-foreground">Sintomas</h3>
               </div>
-              <p className="text-foreground leading-relaxed">{summary.symptoms}</p>
+              <div className="text-foreground leading-relaxed">
+                {summary.symptoms && summary.symptoms.length > 0 ? (
+                  <ul className="space-y-2">
+                    {summary.symptoms.map((symptom, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-primary mt-1 text-sm">•</span>
+                        <span>{symptom}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted-foreground italic">Nenhum sintoma especificado</p>
+                )}
+              </div>
             </Card>
 
             <Card className="p-6">

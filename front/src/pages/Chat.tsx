@@ -21,6 +21,7 @@ interface Message {
   isUser: boolean;
   timestamp: Date;
   isEmergency?: boolean;
+  hasSubtext?: boolean; // Para indicar que tem texto com menos destaque
 }
 
 interface ChatLocationState {
@@ -44,6 +45,24 @@ const Chat = () => {
 
   // Get state from navigation (if coming from modal selection)
   const locationState = location.state as ChatLocationState | null;
+
+  // Function to render message content with different styles
+  const renderMessageContent = (message: Message) => {
+    if (message.hasSubtext && !message.isUser) {
+      const parts = message.content.split('Lembre-se:');
+      if (parts.length === 2) {
+        return (
+          <div className="whitespace-pre-wrap">
+            <span>{parts[0].trim()}</span>
+            <span className="block mt-3 text-muted-foreground text-xs opacity-75 italic">
+              Lembre-se: {parts[1].trim()}
+            </span>
+          </div>
+        );
+      }
+    }
+    return <div className="whitespace-pre-wrap">{message.content}</div>;
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -118,9 +137,10 @@ const Chat = () => {
         // Add a welcome message since it's a new conversation
         const welcomeMessage: Message = {
           id: 'welcome',
-          content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se preparar para sua consulta?',
+          content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se preparar para sua consulta? \n\n Lembre-se: esta é apenas uma triagem inicial e eu não substituo a avaliação de um profissional de saúde.',
           isUser: false,
           timestamp: new Date(),
+          hasSubtext: true,
         };
         setMessages([welcomeMessage]);
       }
@@ -143,9 +163,10 @@ const Chat = () => {
           // Fallback to local welcome message if API fails
           const fallbackMessage: Message = {
             id: 'welcome',
-            content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se preparar para sua consulta?',
+            content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se preparar para sua consulta? \n\n Lembre-se: esta é apenas uma triagem inicial e eu não substituto a avaliação de um profissional de saúde.',
             isUser: false,
             timestamp: new Date(),
+            hasSubtext: true,
           };
           setMessages([fallbackMessage]);
           
@@ -329,11 +350,11 @@ const Chat = () => {
                     ? "bg-destructive/10 border-destructive/20"
                     : "bg-card"
                 }`}>
-                  <p className={`text-sm leading-relaxed ${
+                  <div className={`text-sm leading-relaxed ${
                     message.isEmergency ? "text-destructive font-medium" : ""
                   }`}>
-                    {message.content}
-                  </p>
+                    {renderMessageContent(message)}
+                  </div>
                   <div className="flex justify-end mt-2">
                     <span className={`text-xs ${
                       message.isUser 
