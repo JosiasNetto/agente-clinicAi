@@ -141,8 +141,6 @@ Retorna o resumo da triagem em formato JSON estruturado:
 
 ![Resumo Triagem](imgs/triagem.png)
 
-*(adicione prints reais em `docs/images/` quando testar)*
-
 ---
 
 ## 📌 Observações
@@ -166,10 +164,3 @@ Retorna o resumo da triagem em formato JSON estruturado:
 ## 📜 Licença
 
 MIT License.
-
-```
-
----
-
-👉 Quer que eu já monte esse README diretamente dentro do seu projeto (na pasta raiz do zip extraído) para você baixar pronto?
-```
