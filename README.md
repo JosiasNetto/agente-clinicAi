@@ -38,6 +38,15 @@ agente-clinicAi-main/
 
 ---
 
+## 📥 Clonar o Repositório
+
+Primeiro, faça o clone do projeto para sua máquina local:
+
+```bash
+git clone https://github.com/JosiasNetto/agente-clinicAi.git
+cd agente-clinicAi
+```
+
 ## 🚀 Como rodar o Backend (FastAPI)
 
 1. Crie e ative um ambiente virtual:
@@ -53,10 +62,11 @@ agente-clinicAi-main/
    pip install -r requirements.txt
    ```
 
-3. Configure variáveis de ambiente (`.env`):
+3. Configure variáveis de ambiente criando um arquivo .env na raiz da pasta back/:
 
    ```
-   IA_API_KEY=sua_chave_api
+   # back/.env
+   GEMINI_API_KEY=sua_chave_api_gemini
    MONGODB_URL=sua_url_mongo
    ```
 
