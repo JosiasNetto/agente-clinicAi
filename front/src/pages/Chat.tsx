@@ -35,7 +35,10 @@ const Chat = () => {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [showHeader, setShowHeader] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const lastScrollY = useRef(0);
   
   const { sessionId, isLoading, initializeChat, sendMessage: sendChatMessage, setSessionId } = useChatApi();
 
@@ -49,6 +52,54 @@ const Chat = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Focus input when loading ends
+  useEffect(() => {
+    if (!isLoading && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isLoading]);
+
+  // Initial focus when component mounts
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (inputRef.current && !isLoading) {
+        inputRef.current.focus();
+      }
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  // Handle header visibility on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollDifference = Math.abs(currentScrollY - lastScrollY.current);
+      
+      // Show header when:
+      // 1. At the top of the page
+      // 2. Scrolling up by at least 5px
+      // 3. Near the top (within 150px)
+      if (currentScrollY === 0) {
+        setShowHeader(true);
+      } else if (currentScrollY < 150) {
+        setShowHeader(true);
+      } else if (currentScrollY < lastScrollY.current && scrollDifference > 5) {
+        setShowHeader(true);
+      } else if (currentScrollY > lastScrollY.current && scrollDifference > 20 && currentScrollY > 150) {
+        setShowHeader(false);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     // Check if we have state from navigation (existing conversation or new chat)
@@ -67,7 +118,7 @@ const Chat = () => {
         // Add a welcome message since it's a new conversation
         const welcomeMessage: Message = {
           id: 'welcome',
-          content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?',
+          content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se preparar para sua consulta?',
           isUser: false,
           timestamp: new Date(),
         };
@@ -92,7 +143,7 @@ const Chat = () => {
           // Fallback to local welcome message if API fails
           const fallbackMessage: Message = {
             id: 'welcome',
-            content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para entender melhor sua situação. Como posso te ajudar hoje?',
+            content: 'Olá! Sou seu assistente de triagem médica. Vou fazer algumas perguntas para coletar e organizar seus dados de saúde. Como posso te ajudar a se preparar para sua consulta?',
             isUser: false,
             timestamp: new Date(),
           };
@@ -197,10 +248,10 @@ const Chat = () => {
       });
 
     } catch (error) {
-      console.error('Erro ao buscar resumo da triagem:', error);
+      console.error('Erro ao buscar resumo das informações:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível carregar o resumo da triagem. Tente novamente.",
+        description: "Não foi possível carregar o resumo das informações coletadas. Tente novamente.",
         variant: "destructive",
       });
     }
@@ -209,7 +260,12 @@ const Chat = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b bg-card px-4 py-4 shadow-card">
+      <header className={`
+        fixed top-0 left-0 right-0 z-50 
+        border-b bg-card/95 backdrop-blur-sm px-4 py-4 shadow-card
+        transition-transform duration-300 ease-in-out
+        ${showHeader ? 'translate-y-0' : '-translate-y-full'}
+      `}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
@@ -240,7 +296,7 @@ const Chat = () => {
       </header>
 
       {/* Messages Area */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden pt-24">
         <div className="h-full max-w-4xl mx-auto flex flex-col">
           <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
             {messages.map((message) => (
@@ -320,6 +376,7 @@ const Chat = () => {
         <div className="max-w-4xl mx-auto">
           <div className="flex gap-2">
             <Input
+              ref={inputRef}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}

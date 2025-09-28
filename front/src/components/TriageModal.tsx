@@ -169,7 +169,7 @@ const TriageModal = ({ isOpen, onClose, onStartChat }: TriageModalProps) => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquarePlus className="w-5 h-5 text-primary" />
-            {currentStep === ModalStep.PHONE_INPUT ? 'Iniciar Triagem' : 'Suas Conversas'}
+            {currentStep === ModalStep.PHONE_INPUT ? 'Preparar Consulta' : 'Suas Conversas'}
           </DialogTitle>
         </DialogHeader>
 

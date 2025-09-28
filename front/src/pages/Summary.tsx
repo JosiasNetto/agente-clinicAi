@@ -52,7 +52,7 @@ const Summary = () => {
         } else {
           toast({
             title: "Resumo não disponível",
-            description: "Não foi possível carregar o resumo da triagem.",
+            description: "Não foi possível carregar o resumo das informações coletadas.",
             variant: "destructive",
           });
           navigate('/');
@@ -61,7 +61,7 @@ const Summary = () => {
         console.error('Erro ao carregar resumo:', error);
         toast({
           title: "Erro",
-          description: "Erro ao processar o resumo da triagem.",
+          description: "Erro ao processar o resumo das informações coletadas.",
           variant: "destructive",
         });
         navigate('/');
@@ -130,7 +130,7 @@ const Summary = () => {
           <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Resumo não encontrado</h3>
           <p className="text-muted-foreground mb-4">
-            Não foi possível carregar o resumo da triagem.
+            Não foi possível carregar o resumo das informações coletadas.
           </p>
           <Button onClick={() => navigate('/')}>
             Voltar ao início
@@ -158,7 +158,7 @@ const Summary = () => {
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-semibold text-foreground">Resumo da Triagem</h1>
+                <h1 className="font-semibold text-foreground">Resumo das Informações</h1>
                 <p className="text-xs text-muted-foreground">
                   {summary.timestamp.toLocaleDateString('pt-BR')} às {summary.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 </p>
@@ -181,7 +181,7 @@ const Summary = () => {
               <h2 className="text-xl font-semibold text-foreground">Informações Coletadas</h2>
             </div>
             <p className="text-muted-foreground">
-              Resumo das informações fornecidas durante a triagem médica.
+              Resumo das informações de saúde organizadas durante nossa conversa.
             </p>
           </Card>
 
@@ -249,8 +249,8 @@ const Summary = () => {
               <div>
                 <h3 className="font-medium text-orange-900 mb-2">Aviso Importante</h3>
                 <p className="text-orange-800 text-sm leading-relaxed">
-                  Este resumo é baseado nas informações fornecidas durante a triagem virtual e não substitui 
-                  uma consulta médica presencial. Em caso de dúvidas ou agravamento dos sintomas, 
+                  Este resumo organiza as informações de saúde que você compartilhou e não constitui 
+                  diagnóstico ou orientação médica. Em caso de dúvidas ou agravamento dos sintomas, 
                   procure atendimento médico adequado.
                 </p>
               </div>
@@ -264,7 +264,7 @@ const Summary = () => {
             </Button>
             <Button onClick={() => navigate('/')} variant="outline" className="flex-1">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Nova triagem
+              Nova Triagem
             </Button>
           </div>
         </div>

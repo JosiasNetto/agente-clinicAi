@@ -52,17 +52,17 @@ const Home = () => {
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-light rounded-full text-primary text-sm font-medium">
               <Heart className="w-4 h-4 animate-pulse-medical" />
-              Cuidado médico inteligente
+              Agente de triagem inteligente
             </div>
             
             <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
-              Triagem médica
-              <span className="block text-primary">inteligente e acolhedora</span>
+              Agente de triagem
+              <span className="block text-primary">para organizar suas informações</span>
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-              Converse com nosso agente de triagem para uma avaliação inicial personalizada.
-              Profissional, seguro e sempre disponível.
+              Nosso agente inteligente coleta e organiza suas informações médicas 
+              para agilizar sua consulta com um profissional de saúde.
             </p>
           </div>
 
@@ -74,22 +74,18 @@ const Home = () => {
                   Pronto para começar?
                 </h3>
                 <p className="text-muted-foreground">
-                  Inicie uma conversa para receber orientações médicas personalizadas
+                  Organize suas informações de saúde para otimizar sua próxima consulta
                 </p>
               </div>
               
-              <Button 
-                onClick={handleStartTriage}
-                variant="medical"
-                size="lg"
-                className="w-full"
-              >
-                <Stethoscope className="w-5 h-5 mr-2" />
-                Iniciar nova triagem
-              </Button>
-              
-              <p className="text-xs text-muted-foreground">
-                * Este serviço não substitui consulta médica presencial
+            <Button 
+              size="lg" 
+              className="text-lg px-8 py-6"
+              onClick={handleStartTriage}
+            >
+              Preparar Consulta
+            </Button>              <p className="text-xs text-muted-foreground">
+                * Este serviço organiza informações para facilitar consultas médicas, não oferece diagnóstico ou tratamento
               </p>
             </div>
           </Card>
@@ -100,8 +96,8 @@ const Home = () => {
               <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center mx-auto">
                 <Heart className="w-6 h-6 text-primary" />
               </div>
-              <h4 className="font-medium text-foreground">Acolhedor</h4>
-              <p className="text-sm text-muted-foreground">Conversa empática e profissional</p>
+              <h4 className="font-medium text-foreground">Organizado</h4>
+              <p className="text-sm text-muted-foreground">Estrutura suas informações de saúde</p>
             </div>
             
             <div className="text-center space-y-2">
@@ -116,8 +112,8 @@ const Home = () => {
               <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mx-auto">
                 <Stethoscope className="w-6 h-6 text-primary" />
               </div>
-              <h4 className="font-medium text-foreground">Inteligente</h4>
-              <p className="text-sm text-muted-foreground">IA especializada em triagem</p>
+              <h4 className="font-medium text-foreground">Eficiente</h4>
+              <p className="text-sm text-muted-foreground">Otimiza o tempo de consulta</p>
             </div>
           </div>
         </div>
